@@ -72,7 +72,7 @@
     (time      10 right)
     (nodes      4 right)
     (priority   4 right)
-    (nodelist  40 left))
+    (nodelist  10 left))
   "List of fields to display in the jobs list.
 
 Each entry in the list should be of the form:
@@ -219,6 +219,7 @@ Assign it the new value VALUE."
     (define-key map (kbd "s j") 'slurm-sort-jobname)
     (define-key map (kbd "s d") 'slurm-sort-default)
     (define-key map (kbd "s c") 'slurm-sort)
+    (define-key map (kbd "v") 'slurm-visit-node)
     map)
   "Keymap for slurm-mode.")
 
@@ -245,6 +246,7 @@ Operations on jobs:
   \\[slurm-job-user-details] - Show information about job submitter, as returned by `finger'.
   \\[slurm-job-cancel] - Kill (cancel) job.
   \\[slurm-job-update] - Edit (update) job.
+  \\[slurm-visit-node] - Visit (ssh) into first node for job.
 
 Manipulations of the jobs list:
   \\[slurm-filter-user] - Filter jobs by user name.
@@ -577,6 +579,27 @@ job belongs to a job array, cancel the whole array."
       (slurm-update-mode)
       (slurm--set :command `(("scontrol" "show" "job" ,jobid)))
       (slurm-update-refresh))))
+
+(defun slurm-nodelist ()
+  "Return the slurm nodelist in the current context.
+
+In the `slurm-job-list' view, this is the nodelist displayed on the
+current line."
+  (beginning-of-line)
+  (let ((nlraw (slurm--squeue-get-column 'nodelist)))
+    ;; FIXME: hack to get around nodelist sometimes grabbing parts of next line
+    (car (s-split-up-to "\n\\| " nlraw 1))
+    ))
+
+(defun slurm-visit-node ()
+  "Visit worker node with new multi-term window."
+  (interactive)
+  (when (eq major-mode 'slurm-mode)
+    (let ((nodes (slurm-nodelist)))
+      (message nodes)
+      (let ((new-buffer (ansi-term "/bin/bash" nodes)))
+        ;; (term-send-raw-string (concat method " " (when path-user (concat path-user "@")) path-host "\C-m"))
+        (term-send-raw-string (concat "ssh " nodes "\C-m"))))))
 
 
 ;; *** Partitions list
