@@ -528,13 +528,13 @@ currently being displayed."
          (error "Bad context for slurm-job-id"))))
 
 (defun slurm-job-user-details ()
-  "Display details on the jub submitter, as returned by the shell `finger' utility."
+  "Display details on the jub submitter, as returned by the shell `pinky' utility."
   (interactive)
   (when (slurm--in-view 'slurm-job-list)
     (let ((user (slurm--squeue-get-column 'user)))
       (slurm--run-command
        :message "Retrieving user details"
-       :command `("finger" ,user)
+       :command `("pinky" "-f" "-l" ,user)
        :post    (message "%s" (buffer-string))))))
 
 (defun slurm-job-details ()
