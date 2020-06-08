@@ -360,7 +360,7 @@ Must be updated using `slurm-update-squeue-format' whenever
   "Switch to slurm jobs list view."
   (interactive)
   (when (eq major-mode 'slurm-mode)
-    (slurm--set :command `(("squeue"
+    (slurm--set :command `(("squeue", "-r",
                             "-o" ,slurm--squeue-format-switch
                             ,@(slurm--squeue-filter-user)
                             ,@(slurm--squeue-filter-partition)
@@ -597,8 +597,7 @@ current line."
   (when (eq major-mode 'slurm-mode)
     (let ((nodes (slurm-nodelist)))
       (message nodes)
-      (let ((new-buffer (ansi-term "/bin/bash" nodes)))
-        ;; (term-send-raw-string (concat method " " (when path-user (concat path-user "@")) path-host "\C-m"))
+      (let ((new-buffer (multi-term)))
         (term-send-raw-string (concat "ssh " nodes "\C-m"))))))
 
 
